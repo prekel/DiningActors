@@ -1,13 +1,28 @@
-﻿// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
-
-open System
-
-// Define a function to construct a message to print
-let from whom =
-    sprintf "from %s" whom
+﻿open System
+open DiningActors.Core.Say
+open Akkling
 
 [<EntryPoint>]
 let main argv =
-    let message = from "F#" // Call the function
-    printfn "Hello world %s" message
-    0 // return an integer exit code
+    let n = 5
+
+    let table, system =
+        m n (TimeSpan.FromMilliseconds 1000.) (TimeSpan.FromMilliseconds 5000.)
+
+    let spawnMinTime = TimeSpan.FromMilliseconds 500.
+    let spawnMaxTime = TimeSpan.FromMilliseconds 1500.
+
+    let random = Random()
+
+    for i in [ 1 .. 100 ] do
+        Async.Sleep(randomTime random spawnMinTime spawnMaxTime)
+        |> Async.RunSynchronously
+
+        let p = random.Next(1, n)
+        table.Philosophers.[p] <! StartEating
+
+    //    system.WhenTerminated
+//    |> Async.AwaitTask
+//    |> Async.RunSynchronously
+
+    0
