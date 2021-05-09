@@ -86,8 +86,8 @@ module Say =
                         match left, right with
                         | Some left, Some right ->
                             match left, right with
-                            | fork, right when left = fork -> return! loop (Waiting(None, Some right))
-                            | left, fork when left = fork -> return! loop (Waiting(Some left, None))
+                            | _, right when left = fork -> return! loop (Waiting(None, Some right))
+                            | left, _ when right = fork -> return! loop (Waiting(Some left, None))
                             | _ -> return Unhandled
                         | None, Some right ->
                             if right = fork then
