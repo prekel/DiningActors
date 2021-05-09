@@ -18,8 +18,8 @@ let main argv =
         Async.Sleep(randomTime random spawnMinTime spawnMaxTime)
         |> Async.RunSynchronously
 
-        let p = random.Next(1, n)
-        table.Philosophers.[p] <! StartEating
+        let p = random.Next(1, n + 1)
+        table.Philosophers.[p - 1] <! StartEating
 
     //    system.WhenTerminated
 //    |> Async.AwaitTask

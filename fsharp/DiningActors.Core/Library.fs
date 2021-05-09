@@ -36,14 +36,12 @@ module Say =
         |> TimeSpan.FromMilliseconds
         |> (+) min
 
-    let randomBehavior (ctx: Actor<TimeSpan * TimeSpan>) =
-        let rec loop (random: Random) =
+    let randomBehavior (ctx: Actor<_>) =
+        let rec loop random =
             actor {
                 let! min, max = ctx.Receive()
 
-                let m1 = randomTime random min max
-
-                ctx.Sender() <! m1
+                ctx.Sender() <! randomTime random min max
 
                 return! loop random
             }
