@@ -14,7 +14,6 @@ module Say =
         | StartEating
         | StopEating
         | SuccessfullyTaken of IActorRef<ForkMsg>
-        //| AlreadyTaken of IActorRef<ForkMsg>
         | ForkIsFree of IActorRef<ForkMsg>
 
     and ForkState =
