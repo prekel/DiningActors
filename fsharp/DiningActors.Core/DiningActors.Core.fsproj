@@ -6,7 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Library.fs"/>
+        <Compile Include="Library.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Akkling" Version="0.11.0" />
     </ItemGroup>
 
 </Project>
