@@ -69,7 +69,7 @@ module Say =
                         leftFork <! TryTake(ctx.Self)
                         rightFork <! TryTake(ctx.Self)
                         return! loop (Waiting((Some leftFork), (Some rightFork)))
-                    | _ -> return loop state
+                    | _ -> return! loop state
                 | StopEating ->
                     match state with
                     | Eating ->
