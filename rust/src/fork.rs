@@ -35,7 +35,7 @@ impl ForkActor {
 }
 
 impl Actor for ForkActor {
-    type Context = Context<Self>;
+    type Context = SyncContext<Self>;
 }
 
 #[derive(Debug)]
@@ -58,7 +58,7 @@ impl fmt::Display for ForkMsg {
 impl Handler<ForkMsg> for ForkActor {
     type Result = ();
 
-    fn handle(&mut self, msg: ForkMsg, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: ForkMsg, ctx: &mut Self::Context) -> Self::Result {
         println!("Fork {}, state: {}, msg: {}", self.id, self.state, msg);
         match msg {
             ForkMsg::TryTake(ph) => {

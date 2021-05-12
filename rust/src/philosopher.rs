@@ -5,7 +5,9 @@ use std::time::Duration;
 use actix::prelude::*;
 use rand::Rng;
 use rand::rngs::ThreadRng;
+
 use crate::fork::*;
+use crate::notifier::*;
 
 #[derive(Debug)]
 enum PhilosopherState {
@@ -28,6 +30,7 @@ pub struct PhilosopherActor {
     id: usize,
     left_fork: Addr<ForkActor>,
     right_fork: Addr<ForkActor>,
+    notifier: Addr<NotifierActor>,
     rng: ThreadRng,
     eating_min: Duration,
     eating_max: Duration,
@@ -35,15 +38,16 @@ pub struct PhilosopherActor {
 }
 
 impl Actor for PhilosopherActor {
-    type Context = Context<Self>;
+    type Context = SyncContext<Self>;
 }
 
 impl PhilosopherActor {
-    pub fn new(id: usize, left_fork: Addr<ForkActor>, right_fork: Addr<ForkActor>, eating_min: Duration, eating_max: Duration) -> Self {
+    pub fn new(id: usize, left_fork: Addr<ForkActor>, right_fork: Addr<ForkActor>, notifier: Addr<NotifierActor>, eating_min: Duration, eating_max: Duration) -> Self {
         PhilosopherActor {
             id,
             left_fork,
             right_fork,
+            notifier,
             rng: rand::thread_rng(),
             eating_min,
             eating_max,
@@ -51,10 +55,10 @@ impl PhilosopherActor {
         }
     }
 
-
-    fn start_eating(&mut self, ctx: &mut Context<Self>) {
+    fn start_eating(&mut self, ctx: &mut <PhilosopherActor as Actor>::Context) {
         let rand_time = self.rng.gen_range(self.eating_min..self.eating_max);
-        ctx.notify_later(PhilosopherMsg::StopEating, rand_time);
+        self.notifier.do_send(NotifierMsg::NotifyAfter(ctx.address(), rand_time));
+        //ctx.notify_later(PhilosopherMsg::StopEating, rand_time);
         self.state = PhilosopherState::Eating;
         println!("Philosopher {} started eating {:?}", self.id, rand_time);
     }
@@ -83,7 +87,7 @@ impl fmt::Display for PhilosopherMsg {
 impl Handler<PhilosopherMsg> for PhilosopherActor {
     type Result = ();
 
-    fn handle(&mut self, msg: PhilosopherMsg, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: PhilosopherMsg, ctx: &mut Self::Context) -> Self::Result {
         println!("Philosopher {}, state: {}, msg: {}", self.id, self.state, msg);
 
         match msg {

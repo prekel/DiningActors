@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::time::Duration;
 
 use actix::clock::delay_for;
@@ -5,10 +6,12 @@ use actix::prelude::*;
 use rand::Rng;
 
 use crate::fork::*;
+use crate::notifier::NotifierActor;
 use crate::philosopher::*;
 
 mod philosopher;
 mod fork;
+mod notifier;
 
 async fn run(n: usize, eating_min: Duration, eating_max: Duration, spawn_min: Duration, spawn_max: Duration)
 {
