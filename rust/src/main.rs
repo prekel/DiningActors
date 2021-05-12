@@ -247,38 +247,43 @@ impl Handler<ForkMsg> for ForkActor {
     }
 }
 
-#[actix_rt::main]
-async fn main() {
-    //let f = (1..5).map(|i| ForkActor::new(1)).collect();
+async fn run(n: usize, eating_min: Duration, eating_max: Duration, spawn_min: Duration, spawn_max: Duration)
+{
+    let fs = (1..n + 1).map(|i| ForkActor::new(i).start()).collect::<Vec<Addr<ForkActor>>>();
 
-    let f1 = ForkActor::new(1).start();
-    let f2 = ForkActor::new(2).start();
-    let f3 = ForkActor::new(3).start();
-    let f4 = ForkActor::new(4).start();
-    let f5 = ForkActor::new(5).start();
+    let phs = (1..n + 1).map(|i| {
+        let left = if i == 1 { fs[n - 1].clone() } else { fs[i - 2].clone() };
 
-    let eating_min = Duration::from_millis(1000);
-    let eating_max = Duration::from_millis(5000);
-
-    let p1 = PhilosopherActor::new(1, f5.clone(), f1.clone(), eating_min, eating_max).start();
-    let p2 = PhilosopherActor::new(2, f1.clone(), f2.clone(), eating_min, eating_max).start();
-    let p3 = PhilosopherActor::new(3, f2.clone(), f3.clone(), eating_min, eating_max).start();
-    let p4 = PhilosopherActor::new(4, f3.clone(), f4.clone(), eating_min, eating_max).start();
-    let p5 = PhilosopherActor::new(5, f4.clone(), f5.clone(), eating_min, eating_max).start();
-
-    let spawn_min = Duration::from_millis(500);
-    let spawn_max = Duration::from_millis(1500);
-
-    let phs = vec![p1, p2, p3, p4, p5];
+        PhilosopherActor::new(i, left, fs[i - 1].clone(), eating_min, eating_max).start()
+    }).collect::<Vec<Addr<PhilosopherActor>>>();
 
     let mut rng = rand::thread_rng();
 
     for _ in 1..100000 {
         let sleep_time = rng.gen_range(spawn_min..spawn_max);
+        let p = rng.gen_range(1..n + 1);
+        println!("Spawn philosopher {}, sleep {:?}", p, sleep_time);
         delay_for(sleep_time).await;
-        let p = rng.gen_range(1..5);
         phs[p - 1].do_send(PhilosopherMsg::StartEating);
     }
+}
+
+#[actix_rt::main]
+async fn main() {
+    let n = 5;
+    let eating_min = Duration::from_millis(1000);
+    let eating_max = Duration::from_millis(5000);
+    let spawn_min = Duration::from_millis(500);
+    let spawn_max = Duration::from_millis(1500);
+
+    // let n = 5000;
+    // let eating_min = Duration::from_millis(100);
+    // let eating_max = Duration::from_millis(50000);
+    // let spawn_min = Duration::from_millis(0);
+    // let spawn_max = Duration::from_micros(5);
+
+
+    run(n, eating_min, eating_max, spawn_min, spawn_max).await;
 
     System::current().stop();
 }
